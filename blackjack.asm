@@ -2,9 +2,9 @@
    asJogador: .word 0
    asDealer: .word 0
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
-   msgDesejaJogar: .string "Deseja jogar? (1 - Sim, 2 - Não): "
+   msgDesejaJogar: .string "\nDeseja jogar? (1 - Sim, 2 - Não): "
    msgTotalCartas: .string "\nTotal de cartas: "
-   msgPontuacao: .string "\nPontuação: \n"
+   msgPontuacao: .string "\nPontuação: "
    msgPontuacaoJ: .string "\nJogador: "
    msgPontuacaoD: .string "\nDealer: "
    msgHitStand: .string "O que deseja fazer? (1- Hit, 2 - Stand)"
@@ -21,7 +21,14 @@
    la a0, msgInicio
    li a7, 4
    ecall
+   
+main_loop:
+   call mostraPontuacao
    call verificaDesejo
+    li t0, 2 # Para comparar com a resposta do jogador
+    beq a0, t0, encerrar_jogo
+    call jogar
+    j main_loop
    
 # --- Função: verificaDesejo ---
 #Saída: a0 = 1 (sim) ou 2 (não)
@@ -31,10 +38,7 @@ verificaDesejo:
    ecall
    li a7, 5
    ecall
-   li t1, 1 # Para comparar com a resposta do jogador
-   beq a0, t1, jogar
-   li a7, 10 # Se não for 1 encerra o programa
-   ecall
+   ret
    
  # --- Função mostraPontuacao ---
  mostraPontuacao:
@@ -70,6 +74,10 @@ verificaDesejo:
    ecall
     
    ret
+   
+encerrar_jogo:
+    li a7, 10 
+    ecall   
    
 jogar:
    call mostraPontuacao
