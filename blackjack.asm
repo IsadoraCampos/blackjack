@@ -1,12 +1,12 @@
 .data
    asJogador: .word 0
-   asCarteador: .word 0
+   asDealer: .word 0
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
    msgDesejaJogar: .string "Deseja jogar? (1 - Sim, 2 - Não): "
-   msgTotalCartas: .string "Total de cartas: "
-   msgPontuacao: .string "Pontuação: "
-   msgPontuacaoJ: .string "Jogador: "
-   msgPontuacaoD: .string "Dealer: "
+   msgTotalCartas: .string "\nTotal de cartas: "
+   msgPontuacao: .string "\nPontuação: \n"
+   msgPontuacaoJ: .string "\nJogador: "
+   msgPontuacaoD: .string "\nDealer: "
    msgHitStand: .string "O que deseja fazer? (1- Hit, 2 - Stand)"
    msgJRecebe: .string "O jogador recebe: "
    msgJTem: .string "Sua mão: "
@@ -14,6 +14,8 @@
    msgVenceu: .string "O dealer estourou! Você venceu!\n"
    msgPerdeu: .string "Sua mão estourou! O dealer venceu!\n"
    totalCartas: .word 52
+   pontuacaoJ: .word 0
+   pontuacaoD: .word 0
    
 .text
    la a0, msgInicio
@@ -34,7 +36,40 @@ verificaDesejo:
    li a7, 10 # Se não for 1 encerra o programa
    ecall
    
-jogar:
-   la a0, msgInicio
+ # --- Função mostraPontuacao ---
+ mostraPontuacao:
+   la a0, msgTotalCartas
    li a7, 4
    ecall
+   
+   la t0, totalCartas # Carrega o endereço de totalCartas para t0
+   lw a0, 0(t0) # Carrega o valor de totalCartas
+   li a7, 1
+   ecall
+   
+   la a0, msgPontuacao
+   li a7, 4
+   ecall
+   
+   la a0, msgPontuacaoJ
+   li a7, 4
+   ecall
+   
+   la t0, pontuacaoJ # Endereço da pontuação do jogador
+   lw a0, 0(t0)
+   li a7, 1
+   ecall
+   
+   la a0, msgPontuacaoD
+   li a7, 4
+   ecall
+   
+   la t0, pontuacaoD
+   lw a0, 0(t0)
+   li a7, 1
+   ecall
+    
+   ret
+   
+jogar:
+   call mostraPontuacao
