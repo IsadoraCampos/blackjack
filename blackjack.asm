@@ -1,4 +1,4 @@
-# --- Maria 20230003255 e Isa ---
+# --- Maria Eduarda Rampanelli (20230003255) e Isadora Sbeghen de Campos (20230002890) ---
 
 .data
    asJogador: .word 0
@@ -18,26 +18,24 @@
    msgPerdeu: .string "O dealer venceu!\n"
    msgEmpate: .string "Empate!\n"
    valor_sorteado:  .word 57
-   cartasDistribuidas: .space 52   # 13 inteiros (4 bytes cada) → 52 bytes
+   cartasDistribuidas: .space 52
    totalDistribuidas: .word 0
    totalCartas: .word 52
    pontuacaoJ: .word 0
    pontuacaoD: .word 0
 
 .text
-.globl _start
-_start:
    la a0, msgInicio
    li a7, 4
    ecall
 
 main_loop:
-   jal ra, mostraPontuacao
-   jal ra, verificaDesejo
+   call mostraPontuacao
+   call verificaDesejo
    addi t0, zero, 2
    beq a0, t0, encerrar_jogo
 
-   jal ra, jogar_rodada
+   call jogar_rodada
    j main_loop
 
 # --- Função: verificaDesejo ---
@@ -93,20 +91,21 @@ dealerDistribution:
    bgt t1, t2, reiniciaDistribuicao
 
 continuaDistribuicao:
-   li a7, 42          # chamada para gerar número aleatório
-   addi a0, zero, 13  # gerar número entre 0 e 12
+   li a0, 0
+   li a1, 12
+   li a7, 42
    ecall
 
-   addi a0, a0, 1     # ajusta para 1 a 13
-   addi t3, a0, 0     # mv t3, a0
+   addi a0, a0, 1
+   addi t3, a0, 0
 
    la t4, cartasDistribuidas
    slli t5, t3, 2
    add t6, t4, t5
-   lw t1, 0(t6)       # antes t7, agora t1
+   lw t1, 0(t6)
 
    addi t2, zero, 4
-   bge t1, t2, dealerDistribution  # se já tem 4 cartas deste número, tenta de novo
+   bge t1, t2, dealerDistribution
 
    addi t1, t1, 1
    sw t1, 0(t6)
@@ -115,12 +114,13 @@ continuaDistribuicao:
    addi t2, t2, 1
    sw t2, 0(t0)
 
-   addi a0, t3, 0     # mv a0, t3
+   addi a0, t3, 0
    ret
 
 reiniciaDistribuicao:
    la t3, cartasDistribuidas
    addi t4, zero, 0
+   
 reiniciaLoop:
    addi t5, zero, 13
    beq t4, t5, fimReinicia
@@ -140,23 +140,23 @@ jogar_rodada:
    la t1, pontuacaoD
    sw zero, 0(t1)
 
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_jogador
+   call soma_pontuacao_jogador
 
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_jogador
+   call soma_pontuacao_jogador
 
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_dealer
+   call soma_pontuacao_dealer
 
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_dealer
+   call soma_pontuacao_dealer
 
-   jal ra, mostra_maos
+   call mostra_maos
 
 jogador_turno:
    la a0, msgHitStand
@@ -174,10 +174,10 @@ jogador_turno:
    j jogador_turno
 
 jogador_hit:
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_jogador
-   jal ra, mostra_maos
+   call soma_pontuacao_jogador
+   call mostra_maos
 
    la t0, pontuacaoJ
    lw t6, 0(t0)
@@ -197,10 +197,10 @@ dealer_turno:
    addi t6, zero, 17
    bge t5, t6, verifica_vencedor
 
-   jal ra, dealerDistribution
+   call dealerDistribution
    addi t2, a0, 0
-   jal ra, soma_pontuacao_dealer
-   jal ra, mostra_maos
+   call soma_pontuacao_dealer
+   call mostra_maos
 
    la t1, pontuacaoD
    lw t5, 0(t1)
@@ -261,22 +261,19 @@ mostra_maos:
    li a7, 1
    ecall
    ret
-   
-soma_pontuacao_jogador:
-    # Recebe o número da carta em t2
-    la t0, pontuacaoJ      # endereço da pontuação do jogador
-    lw t1, 0(t0)           # carrega pontuação atual
-    mv t3, t2              # carta sorteada
 
-    # Defina valor da carta:
-    # cartas 1-10 valem o valor, cartas >10 valem 10 (J,Q,K)
+soma_pontuacao_jogador:
+    la t0, pontuacaoJ
+    lw t1, 0(t0)
+    mv t3, t2
+
     li t4, 10
     ble t3, t4, soma_valor
     li t3, 10
 
 soma_valor:
-    add t1, t1, t3         # soma valor da carta na pontuação
-    sw t1, 0(t0)           # salva pontuação atualizada
+    add t1, t1, t3
+    sw t1, 0(t0)
     ret
 
 soma_pontuacao_dealer:
