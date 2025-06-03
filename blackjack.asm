@@ -32,7 +32,7 @@
 main_loop:
    call mostraPontuacao
    call verificaDesejo
-   addi t0, zero, 2
+   li t0, 2
    beq a0, t0, encerrar_jogo
 
    call jogar_rodada
@@ -105,12 +105,12 @@ continuaDistribuicao:
    lw t1, 0(t6)
 
    addi t2, zero, 4
-   bge t1, t2, dealerDistribution
+   bge t1, t2, dealerDistribution  # se a carta já foi distribuída 4 vezes, ele sorteia outra
 
-   addi t1, t1, 1
+   addi t1, t1, 1  # adiciona mais um para a carta que foi dstribuída 
    sw t1, 0(t6)
 
-   lw t2, 0(t0)
+   lw t2, 0(t0)  # carrega totalDistribuidas
    addi t2, t2, 1
    sw t2, 0(t0)
 
@@ -267,6 +267,14 @@ soma_pontuacao_jogador:
     lw t1, 0(t0)
     mv t3, t2
 
+# imprime o valor de t2 (que é a carta)
+    mv a0, t2      # move o valor da carta para a0 (argumento para impressão)
+    li a7, 1       # código da syscall para imprimir inteiro
+    ecall          # faz a chamada do sistema para imprimir
+
+    li t6, 1
+    beq t6, t2, verificaAsJogador
+
     li t4, 10
     ble t3, t4, soma_valor
     li t3, 10
@@ -289,6 +297,12 @@ soma_valor_d:
     add t1, t1, t3
     sw t1, 0(t0)
     ret
+    
+verficaAsJogador:
+   la s0, asJogador
+   li s1, 1
+   sw s1, 0(s0)
+   ret
 
 encerrar_jogo:
    li a7, 10
