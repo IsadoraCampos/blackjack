@@ -1,8 +1,6 @@
 # --- Maria Eduarda Rampanelli (20230003255) e Isadora Sbeghen de Campos (20230002890) ---
 
 .data
-   asJogador: .word 0
-   asDealer: .word 0
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
    msgDesejaJogar: .string "\nDeseja jogar? (1 - Sim, 2 - Não): "
    msgTotalCartas: .string "\nTotal de cartas: "
@@ -10,10 +8,10 @@
    msgPontuacaoJ: .string "\nJogador: "
    msgPontuacaoD: .string "\nDealer: "
    msgHitStand: .string "\nO que deseja fazer? (1- Hit, 2 - Stand): "
-   msgJRecebe: .string "O jogador recebe: "
-   msgDRecebe: .string "O dealer recebe: "
+   msgJRecebe: .string "\nO jogador recebe: "
+   msgDRecebe: .string "\nO dealer recebe: "
    msgJTem: .string "Sua mão: "
-   msgDTem: .string "O dealer tem: "
+   msgDTem: .string "\nO dealer tem: "
    msgVenceu: .string "Você venceu!\n"
    msgPerdeu: .string "O dealer venceu!\n"
    msgEmpate: .string "Empate!\n"
@@ -267,19 +265,19 @@ soma_pontuacao_jogador:
     lw t1, 0(t0)
     mv t3, t2
 
-# imprime o valor de t2 (que é a carta)
-    mv a0, t2      # move o valor da carta para a0 (argumento para impressão)
-    li a7, 1       # código da syscall para imprimir inteiro
-    ecall          # faz a chamada do sistema para imprimir
-
-    li t6, 1
-    beq t6, t2, verificaAsJogador
+# imprime o valor de t2 (que é a carta) (para debugar)
+    #mv a0, t2     
+    #li a7, 1       
+    #ecall          
 
     li t4, 10
     ble t3, t4, soma_valor
     li t3, 10
 
 soma_valor:
+    li t6, 1
+    beq t6, t3, verificaAsJogador
+    
     add t1, t1, t3
     sw t1, 0(t0)
     ret
@@ -294,14 +292,27 @@ soma_pontuacao_dealer:
     li t3, 10
 
 soma_valor_d:
+    li t6, 1
+    beq t6, t3, verificaAsDealer
+    
     add t1, t1, t3
     sw t1, 0(t0)
     ret
     
-verficaAsJogador:
-   la s0, asJogador
-   li s1, 1
-   sw s1, 0(s0)
+verificaAsJogador: 
+   li t5, 16
+   bge t1, t5, tornaAs1      # primeiro verifica se a pontuação é maior ou igual a 16        
+   li t3, 11                # se não, a carta vira 11
+   ret
+   
+verificaAsDealer:
+   li t5, 16
+   bge t1, t5, tornaAs1      
+   li t3, 11                
+   ret
+   
+tornaAs1:
+   li t3, 1
    ret
 
 encerrar_jogo:
