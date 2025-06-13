@@ -1,4 +1,4 @@
-# --- Maria Eduarda Rampanelli (20230003255) e Isadora Sbeghen de Campos (20230002890) ---
+# --- Maria Eduarda Rampanelli (20230003566) e Isadora Sbeghen de Campos (20230002890) ---
 
 .data
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
