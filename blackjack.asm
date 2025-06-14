@@ -10,12 +10,15 @@
    msgHitStand: .string "\nO que deseja fazer? (1- Hit, 2 - Stand): "
    msgJRecebe: .string "\nO jogador recebe: "
    msgDRecebe: .string "\nO dealer recebe: "
+   msgDRevela: .string "\nO dealer revela: "
+   msgDCartaOculta: .string "e uma carta oculta"
+   msgDealerContinua: .string "\nO dealer deve continuar pedindo cartas..."
    msgJTem: .string "\nSua mão: "
    msgDTem: .string "\nO dealer tem: "
    msgVenceu: .string "\nVocê venceu!"
    msgPerdeu: .string "\nO dealer venceu!"
    msgEmpate: .string "\nEmpate!"
-   valor_sorteado:  .word 57
+   .align 2
    cartasDistribuidas: .space 52
    totalDistribuidas: .word 0
    totalCartas: .word 52
@@ -23,6 +26,10 @@
    pontuacaoD: .word 0
    pontuacaoJRodada: .word 0
    pontuacaoDRodada: .word 0
+   maoJ: .space 52
+   maoD: .space 52
+   tamMaoJ: .word 0
+   tamMaoD: .word 0
 
 .text
    la a0, msgInicio
@@ -127,6 +134,10 @@ reiniciaDistribuicao:
    la t3, cartasDistribuidas
    addi t4, zero, 0
    
+   la t5, totalCartas # Reinicia o valor do total de cartas
+   li t6, 52
+   sw t6, 0(t5)
+   
 reiniciaLoop:
    addi t5, zero, 13
    beq t4, t5, fimReinicia
@@ -145,22 +156,31 @@ jogar_rodada:
    sw zero, 0(t0)
    la t1, pontuacaoD
    sw zero, 0(t1)
+   
+   la t0, tamMaoJ
+   sw zero, 0(t0)
+   la t0, tamMaoD
+   sw zero, 0(t0)
 
    call dealerDistribution
    addi t2, a0, 0
    call soma_pontuacao_jogador
+   call adiciona_maoJ
 
    call dealerDistribution
    addi t2, a0, 0
    call soma_pontuacao_jogador
+   call adiciona_maoJ
 
    call dealerDistribution
    addi t2, a0, 0
    call soma_pontuacao_dealer
+   call adiciona_maoD
 
    call dealerDistribution
    addi t2, a0, 0
    call soma_pontuacao_dealer
+   call adiciona_maoD
 
    call mostra_maos
 
@@ -183,6 +203,7 @@ jogador_hit:
    call dealerDistribution
    addi t2, a0, 0
    call soma_pontuacao_jogador
+   call adiciona_maoJ
    call mostra_maos
 
    la t0, pontuacaoJ
@@ -210,9 +231,14 @@ dealer_loop:
    li t6, 17
    bge t5, t6, verifica_vencedor  # Se dealer >= 17, para
 
+   la a0, msgDealerContinua
+   li a7, 4
+   ecall
+  
    call dealerDistribution
    mv t2, a0
    call soma_pontuacao_dealer
+   call adiciona_maoD
    call mostra_maos
 
    la t1, pontuacaoD
@@ -235,6 +261,34 @@ dealer_estourou:
    call mostraPontuacao
    call verificaDesejo
    j main_loop
+
+# Função que adiciona o valor da carta na mão do jogador - Recebe em t2 a carta sorteada
+adiciona_maoJ:
+   la t0, tamMaoJ
+   lw t1, 0(t0) # t1 = tamanho do vetor (índice)
+   
+   la t4, maoJ # t4 = endereço base do vetor
+   slli t3, t1, 2 # t3 = índice * 4 (para pegar o próximo endereço de memória livre)
+   add t5, t4, t3 # t5 = endereço para a carta nova
+   sw t2, 0(t5)
+   
+   addi t1, t1, 1
+   sw t1, 0(t0)
+   ret
+    
+ # Função que adiciona o valor da carta na mão do jogador - Recebe em t2 a carta sorteada
+ adiciona_maoD:
+   la t0, tamMaoD
+   lw t1, 0(t0)
+   
+   la t4, maoD
+   slli t3, t1, 2
+   add t5, t4, t3
+   sw t2, 0(t5)
+   
+   addi t1, t1, 1
+   sw t1, 0(t0)
+   ret
 
 verifica_vencedor:
    la t0, pontuacaoJ
@@ -302,7 +356,7 @@ mostra_maos:
    li a7, 1
    ecall
    ret
-
+   
 soma_pontuacao_jogador:
     la t0, pontuacaoJ
     lw t1, 0(t0)
