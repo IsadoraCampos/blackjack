@@ -8,10 +8,12 @@
    msgPontuacaoJ: .string "\nJogador: "
    msgPontuacaoD: .string "\nDealer: "
    msgHitStand: .string "\nO que deseja fazer? (1- Hit, 2 - Stand): "
+   msgE: .string " e "
+   msgMais: .string " + "
+   msgIgual: .string " = "
    msgJRecebe: .string "\nO jogador recebe: "
    msgDRecebe: .string "\nO dealer recebe: "
-   msgDRevela: .string "\nO dealer revela: "
-   msgDCartaOculta: .string "e uma carta oculta"
+   msgDCartaOculta: .string "uma carta oculta"
    msgDealerContinua: .string "\nO dealer deve continuar pedindo cartas..."
    msgJTem: .string "\nSua mão: "
    msgDTem: .string "\nO dealer tem: "
@@ -26,7 +28,9 @@
    pontuacaoD: .word 0
    pontuacaoJRodada: .word 0
    pontuacaoDRodada: .word 0
+   .align 2
    maoJ: .space 52
+   .align 2
    maoD: .space 52
    tamMaoJ: .word 0
    tamMaoD: .word 0
@@ -182,7 +186,8 @@ jogar_rodada:
    call soma_pontuacao_dealer
    call adiciona_maoD
 
-   call mostra_maos
+   call mostra_cartas_recebidas
+   call mostra_maoJ
 
 jogador_turno:
    la a0, msgHitStand
@@ -204,7 +209,9 @@ jogador_hit:
    addi t2, a0, 0
    call soma_pontuacao_jogador
    call adiciona_maoJ
-   call mostra_maos
+   call mostra_carta_recebidaJ
+   call mostra_maoJ
+   call mostra_maoD
 
    la t0, pontuacaoJ
    lw t6, 0(t0)
@@ -239,7 +246,8 @@ dealer_loop:
    mv t2, a0
    call soma_pontuacao_dealer
    call adiciona_maoD
-   call mostra_maos
+   call mostra_carta_recebidaD
+   call mostra_maoD
 
    la t1, pontuacaoD
    lw t5, 0(t1)
@@ -276,8 +284,8 @@ adiciona_maoJ:
    sw t1, 0(t0)
    ret
     
- # Função que adiciona o valor da carta na mão do jogador - Recebe em t2 a carta sorteada
- adiciona_maoD:
+# Função que adiciona o valor da carta na mão do dealer - Recebe em t2 a carta sorteada
+adiciona_maoD:
    la t0, tamMaoD
    lw t1, 0(t0)
    
@@ -289,6 +297,176 @@ adiciona_maoJ:
    addi t1, t1, 1
    sw t1, 0(t0)
    ret
+      
+# Função que mostra as cartas recebidas
+mostra_cartas_recebidas:
+   la a0, msgJRecebe
+   li a7, 4
+   ecall
+   
+   la t0, maoJ
+   lw t1, 0(t0) # Primeira carta tirada
+   mv a0, t1
+   li a7, 1
+   ecall
+   
+   la a0, msgE
+   li a7, 4
+   ecall
+   
+   lw t2, 4(t0)
+   mv a0, t2
+   li a7, 1
+   ecall
+   
+   la a0, msgDRecebe
+   li a7, 4
+   ecall
+   
+   la t0, maoD
+   lw t1, 0(t0)
+   mv a0, t1
+   li a7, 1
+   ecall
+   
+   la a0, msgE
+   li a7, 4
+   ecall
+   
+   la a0, msgDCartaOculta
+   li a7, 4
+   ecall
+   ret
+
+# Função que mostra a última carta recebida      
+mostra_carta_recebidaJ:
+  la a0, msgJRecebe
+  li a7, 4
+  ecall
+
+  la t0, tamMaoJ
+  lw t1, 0(t0)
+  
+  li t2, 1
+  sub t1, t1, t2 # pegar o último índice do vetor
+  slli t1, t1, 2
+  
+  la t3, maoJ
+  add t4, t3, t1 # t4 = endereço da última carta
+  lw t2, 0(t4)
+  
+  mv a0, t2
+  li a7, 1
+  ecall 
+  ret
+  
+mostra_carta_recebidaD:
+  la a0, msgDRecebe
+  li a7, 4
+  ecall
+
+  la t0, tamMaoD
+  lw t1, 0(t0)
+  
+  li t2, 1
+  sub t1, t1, t2
+  slli t1, t1, 2
+  
+  la t3, maoD
+  add t4, t3, t1
+  lw t2, 0(t4)
+  
+  mv a0, t2
+  li a7, 1
+  ecall 
+  ret 
+  
+# Função que mostra a mão completa do jogador (Exemplo: 4 + 6 = 10)
+mostra_maoJ:
+  la a0, msgJTem
+  li a7, 4
+  ecall
+
+  la t0, tamMaoJ
+  lw t1, 0(t0)
+  la t2, maoJ
+  li t3, 0 # contador loop
+  
+loop_mostra_maoJ:
+  beq t3, t1, fim_loop_mostraMaoJ
+  slli t4, t3, 2
+  add t5, t2, t4 # t5 = endereço da carta
+  lw t6, 0(t5)
+  
+  mv a0, t6
+  li a7, 1
+  ecall
+  
+  addi a3, t1, -1     # t7 = última posição do vetor
+  beq t3, a3, pula_mais_maoJ
+
+  la a0, msgMais
+  li a7, 4
+  ecall
+
+pula_mais_maoJ:
+  addi t3, t3, 1
+  j loop_mostra_maoJ
+
+fim_loop_mostraMaoJ:
+  la a0, msgIgual
+  li a7, 4
+  ecall
+
+  la t0, pontuacaoJ
+  lw a0, 0(t0)
+  li a7, 1
+  ecall
+
+  ret
+  
+mostra_maoD:
+  la a0, msgDTem
+  li a7, 4
+  ecall
+
+  la t0, tamMaoD
+  lw t1, 0(t0)
+  la t2, maoD
+  li t3, 0 # contador loop
+  
+loop_mostra_maoD:
+  beq t3, t1, fim_loop_mostraMaoD
+  slli t4, t3, 2
+  add t5, t2, t4 # t5 = endereço da carta
+  lw t6, 0(t5)
+  
+  mv a0, t6
+  li a7, 1
+  ecall
+  
+  addi a3, t1, -1     # t7 = última posição do vetor
+  beq t3, a3, pula_mais_maoD
+
+  la a0, msgMais
+  li a7, 4
+  ecall
+
+pula_mais_maoD:
+  addi t3, t3, 1
+  j loop_mostra_maoD
+
+fim_loop_mostraMaoD:
+  la a0, msgIgual
+  li a7, 4
+  ecall
+
+  la t0, pontuacaoD
+  lw a0, 0(t0)
+  li a7, 1
+  ecall
+
+  ret  
 
 verifica_vencedor:
    la t0, pontuacaoJ
@@ -335,27 +513,6 @@ empate:
    call mostraPontuacao
    call verificaDesejo
    j main_loop
-
-# Mostrar mãos atuais 
-mostra_maos:
-   la a0, msgJTem
-   li a7, 4
-   ecall
-
-   la t0, pontuacaoJ
-   lw a0, 0(t0)
-   li a7, 1
-   ecall
-
-   la a0, msgDTem
-   li a7, 4
-   ecall
-
-   la t0, pontuacaoD
-   lw a0, 0(t0)
-   li a7, 1
-   ecall
-   ret
    
 soma_pontuacao_jogador:
     la t0, pontuacaoJ
