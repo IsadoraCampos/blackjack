@@ -529,6 +529,7 @@ adiciona_asJ:
    la t3, quantAsJ
    lw t4, 0(t3)
    addi t4, t4, 1
+   sw t4, 0(t3)
    ret         
    
 soma_pontuacao_jogador:
