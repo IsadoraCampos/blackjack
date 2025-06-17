@@ -34,6 +34,8 @@
    maoD: .space 52
    tamMaoJ: .word 0
    tamMaoD: .word 0
+   quantAsJ: .word 0
+   quantAsD: .word 0
 
 .text
    la a0, msgInicio
@@ -168,11 +170,13 @@ jogar_rodada:
 
    call dealerDistribution
    addi t2, a0, 0
+   call verifica_se_tirouAsJ
    call soma_pontuacao_jogador
    call adiciona_maoJ
 
    call dealerDistribution
    addi t2, a0, 0
+   call verifica_se_tirouAsJ
    call soma_pontuacao_jogador
    call adiciona_maoJ
 
@@ -207,6 +211,7 @@ jogador_turno:
 jogador_hit:
    call dealerDistribution
    addi t2, a0, 0
+   call verifica_se_tirouAsJ
    call soma_pontuacao_jogador
    call adiciona_maoJ
    call mostra_carta_recebidaJ
@@ -514,6 +519,18 @@ empate:
    call verificaDesejo
    j main_loop
    
+verifica_se_tirouAsJ:
+   # t2 = carta sorteada
+   li t0, 1
+   beq t0, t2, adiciona_asJ
+   ret
+   
+adiciona_asJ:
+   la t3, quantAsJ
+   lw t4, 0(t3)
+   addi t4, t4, 1
+   ret         
+   
 soma_pontuacao_jogador:
     la t0, pontuacaoJ
     lw t1, 0(t0)
@@ -526,8 +543,36 @@ soma_pontuacao_jogador:
 soma_valor:
     add t1, t1, t3
     sw t1, 0(t0)
+    
+    li t4, 1
+    beq t3, t4, verifica_asJ
+    ret
+    
+verifica_asJ:
+    # t1 = pontuacaoJ
+    la t0, pontuacaoJ
+    lw t1, 0(t0)
+    li t5, 21
+    bge t1, t5, tira10SeTiverAsJ
     ret
 
+tira10SeTiverAsJ:
+   la a3, quantAsJ
+   lw a4, 0(a3)
+   li t4, 1
+   
+   bge a4, t4, tira10J
+   ret
+  
+tira10J:
+  li a5, 10
+  sub t1, t1, a5
+  sw t1, 0(t0)
+  
+  sub a4, a4, t4
+  sw a4, 0(a3)
+  ret
+  
 soma_pontuacao_dealer:
     la t0, pontuacaoD
     lw t1, 0(t0)
