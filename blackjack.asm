@@ -555,7 +555,7 @@ verifica_asJ:
     lw t1, 0(t0)
     li t5, 21
     bge t1, t5, tira10SeTiverAsJ
-    addi t1, t1, 11
+    addi t1, t1, 10                # se tirou o Ás mas não precisa diminuir então soma 10, pois o vsalor 1 já foi adicionado em soma_valor
     sw t1, 0(t0)  # se não for maior ou igual a 21, soma 11
     ret
 
