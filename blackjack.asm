@@ -555,6 +555,8 @@ verifica_asJ:
     lw t1, 0(t0)
     li t5, 21
     bge t1, t5, tira10SeTiverAsJ
+    addi t1, t1, 11
+    sw t1, 0(t0)  # se não for maior ou igual a 21, soma 11
     ret
 
 tira10SeTiverAsJ:
