@@ -167,6 +167,11 @@ jogar_rodada:
    sw zero, 0(t0)
    la t0, tamMaoD
    sw zero, 0(t0)
+   
+   la t0, quantAsJ
+   sw zero, 0(t0)
+   la t1, quantAsD
+   sw zero, 0(t1)
 
    call dealerDistribution
    addi t2, a0, 0
@@ -182,11 +187,13 @@ jogar_rodada:
 
    call dealerDistribution
    addi t2, a0, 0
+   call verifica_se_tirouAsD
    call soma_pontuacao_dealer
    call adiciona_maoD
 
    call dealerDistribution
    addi t2, a0, 0
+   call verifica_se_tirouAsD
    call soma_pontuacao_dealer
    call adiciona_maoD
 
@@ -249,6 +256,7 @@ dealer_loop:
   
    call dealerDistribution
    mv t2, a0
+   call verifica_se_tirouAsD
    call soma_pontuacao_dealer
    call adiciona_maoD
    call mostra_carta_recebidaD
@@ -396,7 +404,7 @@ mostra_maoJ:
   lw t1, 0(t0)
   la t2, maoJ
   li t3, 0 # contador loop
-  
+
 loop_mostra_maoJ:
   beq t3, t1, fim_loop_mostraMaoJ
   slli t4, t3, 2
@@ -532,6 +540,19 @@ adiciona_asJ:
    sw t4, 0(t3)
    ret         
    
+verifica_se_tirouAsD:
+   # t2 = carta sorteada
+   li t0, 1
+   beq t0, t2, adiciona_asD
+   ret
+   
+adiciona_asD:
+   la t3, quantAsD
+   lw t4, 0(t3)
+   addi t4, t4, 1
+   sw t4, 0(t3)
+   ret    
+   
 soma_pontuacao_jogador:
     la t0, pontuacaoJ
     lw t1, 0(t0)
@@ -545,18 +566,35 @@ soma_valor:
     add t1, t1, t3
     sw t1, 0(t0)
     
-    li t4, 1
-    beq t3, t4, verifica_asJ
+    # percorrer a mão jo jogador e verificar se possui um Ás
+    la s3, tamMaoJ
+    lw s4, 0(s3)
+    la s5, maoJ
+    li t6, 0 # contador loop
+    
+loop_verifica_asJ:
+   beq t6, s4, fim_loop_verificaAsJ
+   slli s6, t6, 2
+   add s7, s5, s6
+   lw s8, 0(s7)  # s8 = carta
+   li a2, 1
+   addi t6, t6, 1
+   beq s8, a2, verifica_asJ
+   j loop_verifica_asJ  
+   
+fim_loop_verificaAsJ:
     ret
     
 verifica_asJ:
     # t1 = pontuacaoJ
     la t0, pontuacaoJ
     lw t1, 0(t0)
+    
     li t5, 21
-    bge t1, t5, tira10SeTiverAsJ
-    addi t1, t1, 10                # se tirou o Ás mas não precisa diminuir então soma 10, pois o vsalor 1 já foi adicionado em soma_valor
-    sw t1, 0(t0)  # se não for maior ou igual a 21, soma 11
+    addi t1, t1, 10 # adiciona 10 na pontuação do jogador e verifica se passou de 21
+    sw t1, 0(t0)
+    
+    bgt t1, t5, tira10SeTiverAsJ
     ret
 
 tira10SeTiverAsJ:
@@ -588,7 +626,39 @@ soma_pontuacao_dealer:
 soma_valor_d:   
     add t1, t1, t3
     sw t1, 0(t0)
+    
+    li t4, 1
+    beq t2, t4, verifica_asD
     ret
+    
+verifica_asD:
+    # t1 = pontuacaoD
+    la t0, pontuacaoD
+    lw t1, 0(t0)
+    
+    li t5, 21
+    addi t1, t1, 10 # adiciona 10 na pontuação do dealer e verifica se passou de 21
+    sw t1, 0(t0)
+    
+    bgt t1, t5, tira10SeTiverAsD
+    ret
+
+tira10SeTiverAsD:
+   la a3, quantAsD
+   lw a4, 0(a3)
+   li t4, 1
+   
+   bge a4, t4, tira10D
+   ret
+  
+tira10D:
+  li a5, 10
+  sub t1, t1, a5
+  sw t1, 0(t0)
+  
+  sub a4, a4, t4
+  sw a4, 0(a3)
+  ret    
 
 encerrar_jogo:
    li a7, 10
