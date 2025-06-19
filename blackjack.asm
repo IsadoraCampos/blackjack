@@ -562,7 +562,7 @@ soma_valor:
     
 verifica_asJ:
    # t1 = pontuacaoJ
-    la t0, pontuacaoD
+    la t0, pontuacaoJ
     lw t1, 0(t0)
     
     li t5, 21
