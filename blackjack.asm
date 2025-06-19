@@ -1,6 +1,20 @@
 # --- Maria Eduarda Rampanelli (20230003566) e Isadora Sbeghen de Campos (20230002890) ---
 
 .data
+   totalDistribuidas: .word 0
+   totalCartas: .word 52
+   pontuacaoJ: .word 0
+   pontuacaoD: .word 0
+   tamMaoJ: .word 0
+   tamMaoD: .word 0
+   quantAsJ: .word 0
+   quantAsD: .word 0
+   pontuacaoJRodada: .word 0
+   pontuacaoDRodada: .word 0
+   maoJ: .space 52
+   maoD: .space 52
+   cartasDistribuidas: .space 52
+   
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
    msgDesejaJogar: .string "\nDeseja jogar? (1 - Sim, 2 - Não): "
    msgTotalCartas: .string "\nTotal de cartas: "
@@ -20,23 +34,7 @@
    msgVenceu: .string "\nVocê venceu!"
    msgPerdeu: .string "\nO dealer venceu!"
    msgEmpate: .string "\nEmpate!"
-   .align 2
-   cartasDistribuidas: .space 52
-   totalDistribuidas: .word 0
-   totalCartas: .word 52
-   pontuacaoJ: .word 0
-   pontuacaoD: .word 0
-   pontuacaoJRodada: .word 0
-   pontuacaoDRodada: .word 0
-   .align 2
-   maoJ: .space 52
-   .align 2
-   maoD: .space 52
-   tamMaoJ: .word 0
-   tamMaoD: .word 0
-   quantAsJ: .word 0
-   quantAsD: .word 0
-
+   
 .text
    la a0, msgInicio
    li a7, 4
@@ -127,9 +125,8 @@ continuaDistribuicao:
    sw t2, 0(t0)
    
    la t4, totalCartas  # diminui o total de cartas
-   li t6, 1
    lw t5, 0(t4)
-   sub t5, t5, t6
+   addi t5, t5, -1
    sw t5, 0(t4) 
 
    addi a0, t3, 0
@@ -159,42 +156,17 @@ fimReinicia:
 jogar_rodada:
    la t0, pontuacaoJ
    sw zero, 0(t0)
-   la t1, pontuacaoD
-   sw zero, 0(t1)
+   sw zero, 4(t0)
+   sw zero, 8(t0)
+   sw zero, 12(t0)
+   sw zero, 16(t0)
+   sw zero, 20(t0)
    
-   la t0, tamMaoJ
-   sw zero, 0(t0)
-   la t0, tamMaoD
-   sw zero, 0(t0)
+   call jogador_jogada
+   call jogador_jogada
    
-   la t0, quantAsJ
-   sw zero, 0(t0)
-   la t1, quantAsD
-   sw zero, 0(t1)
-
-   call dealerDistribution
-   addi t2, a0, 0
-   call verifica_se_tirouAsJ
-   call soma_pontuacao_jogador
-   call adiciona_maoJ
-
-   call dealerDistribution
-   addi t2, a0, 0
-   call verifica_se_tirouAsJ
-   call soma_pontuacao_jogador
-   call adiciona_maoJ
-
-   call dealerDistribution
-   addi t2, a0, 0
-   call verifica_se_tirouAsD
-   call soma_pontuacao_dealer
-   call adiciona_maoD
-
-   call dealerDistribution
-   addi t2, a0, 0
-   call verifica_se_tirouAsD
-   call soma_pontuacao_dealer
-   call adiciona_maoD
+   call dealer_jogada
+   call dealer_jogada
 
    call mostra_cartas_recebidas
    call mostra_maoJ
@@ -215,11 +187,7 @@ jogador_turno:
    j jogador_turno
 
 jogador_hit:
-   call dealerDistribution
-   addi t2, a0, 0
-   call verifica_se_tirouAsJ
-   call soma_pontuacao_jogador
-   call adiciona_maoJ
+   call jogador_jogada
    call mostra_carta_recebidaJ
    call mostra_maoJ
    call mostra_maoD
@@ -252,11 +220,7 @@ dealer_loop:
    li a7, 4
    ecall
   
-   call dealerDistribution
-   mv t2, a0
-   call verifica_se_tirouAsD
-   call soma_pontuacao_dealer
-   call adiciona_maoD
+   call dealer_jogada
    call mostra_carta_recebidaD
    call mostra_maoD
 
@@ -627,14 +591,33 @@ tira10SeTiverAsD:
    ret
   
 tira10D:
-  li a5, 10
-  sub t1, t1, a5
+  addi t1, t1, -10
   sw t1, 0(t0)
   
-  sub a4, a4, t4
+  addi a4, a4, -1
   sw a4, 0(a3)
   ret    
-
+  
+ jogador_jogada:
+   mv s8, ra
+   call dealerDistribution # perdeu a referência do retorno da função
+   addi t2, a0, 0
+   call verifica_se_tirouAsJ
+   call soma_pontuacao_jogador
+   call adiciona_maoJ
+   mv ra, s8 # recupera para o outro ret da função que chama jogador_jogada
+   ret
+   
+dealer_jogada:
+   mv s8, ra
+   call dealerDistribution
+   addi t2, a0, 0
+   call verifica_se_tirouAsD
+   call soma_pontuacao_dealer
+   call adiciona_maoD
+   mv ra, s8
+   ret 
+  
 encerrar_jogo:
    li a7, 10
    ecall
