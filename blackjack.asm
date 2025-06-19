@@ -45,9 +45,6 @@
 main_loop:
    call mostraPontuacao
    call verificaDesejo
-   li t0, 2
-   beq a0, t0, encerrar_jogo
-
    call jogar_rodada
    j main_loop
 
@@ -58,6 +55,8 @@ verificaDesejo:
    ecall
    li a7, 5
    ecall
+   li t0, 2
+   beq a0, t0, encerrar_jogo
    ret
 
 # --- Função mostraPontuacao ---
@@ -240,8 +239,7 @@ jogador_estourou:
    addi t3, t3, 1   # adiciona mais um na pontuação da rodada do dealer
    sw t3, 0(t2)
    
-   call mostraPontuacao
-   call verificaDesejo
+   j main_loop
 
 dealer_turno:
 dealer_loop:
@@ -279,8 +277,6 @@ dealer_estourou:
    addi t3, t3, 1   # adiciona mais um na pontuação da rodada do jogador
    sw t3, 0(t2)
    
-   call mostraPontuacao
-   call verificaDesejo
    j main_loop
 
 # Função que adiciona o valor da carta na mão do jogador - Recebe em t2 a carta sorteada
@@ -500,8 +496,6 @@ verifica_vencedor:
    addi t3, t3, 1   # adiciona mais um na pontuação da rodada do jogador
    sw t3, 0(t2)
    
-   call mostraPontuacao
-   call verificaDesejo
    j main_loop
 
 dealer_ganha:
@@ -514,8 +508,6 @@ dealer_ganha:
    addi t3, t3, 1   # adiciona mais um na pontuação da rodada do dealer
    sw t3, 0(t2)
    
-   call mostraPontuacao
-   call verificaDesejo
    j main_loop
 
 empate:
@@ -523,8 +515,6 @@ empate:
    la a0, msgEmpate
    li a7, 4
    ecall
-   call mostraPontuacao
-   call verificaDesejo
    j main_loop
    
 verifica_se_tirouAsJ:
