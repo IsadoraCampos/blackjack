@@ -14,7 +14,8 @@
    maoJ: .space 52
    maoD: .space 52
    cartasDistribuidas: .space 52
-   
+
+   # strings
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
    msgDesejaJogar: .string "\nDeseja jogar? (1 - Sim, 2 - Não): "
    msgTotalCartas: .string "\nTotal de cartas: "
