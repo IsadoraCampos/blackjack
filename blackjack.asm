@@ -566,28 +566,13 @@ soma_valor:
     add t1, t1, t3
     sw t1, 0(t0)
     
-    # percorrer a mão jo jogador e verificar se possui um Ás
-    la s3, tamMaoJ
-    lw s4, 0(s3)
-    la s5, maoJ
-    li t6, 0 # contador loop
-    
-loop_verifica_asJ:
-   beq t6, s4, fim_loop_verificaAsJ
-   slli s6, t6, 2
-   add s7, s5, s6
-   lw s8, 0(s7)  # s8 = carta
-   li a2, 1
-   addi t6, t6, 1
-   beq s8, a2, verifica_asJ
-   j loop_verifica_asJ  
-   
-fim_loop_verificaAsJ:
+    li t4, 1
+    beq t2, t4, verifica_asJ
     ret
     
 verifica_asJ:
-    # t1 = pontuacaoJ
-    la t0, pontuacaoJ
+   # t1 = pontuacaoJ
+    la t0, pontuacaoD
     lw t1, 0(t0)
     
     li t5, 21
