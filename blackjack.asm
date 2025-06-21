@@ -14,7 +14,7 @@
    maoJ: .space 52
    maoD: .space 52
    cartasDistribuidas: .space 52
-
+   
    # strings
    msgInicio: .string "Bem-vindo ao BlackJack!\n"
    msgDesejaJogar: .string "\nDeseja jogar? (1 - Sim, 2 - Não): "
@@ -58,7 +58,7 @@ verificaDesejo:
    beq a0, t0, encerrar_jogo
    ret
 
-# --- Função mostraPontuacao ---
+# --- Função: mostraPontuacao ---
 mostraPontuacao:
    la a0, msgTotalCartas
    li a7, 4
@@ -93,8 +93,8 @@ mostraPontuacao:
 
    ret
 
-# --- Função: dealerDistribution ---
-dealerDistribution:
+# --- Função: distribuiCartas ---
+distribuiCartas:
    la t0, totalDistribuidas
    lw t1, 0(t0)
 
@@ -116,7 +116,7 @@ continuaDistribuicao:
    lw t1, 0(t6)
 
    addi t2, zero, 4
-   bge t1, t2, dealerDistribution  # se a carta já foi distribuída 4 vezes, ele sorteia outra
+   bge t1, t2, distribuiCartas  # se a carta já foi distribuída 4 vezes, ele sorteia outra
 
    addi t1, t1, 1  # adiciona mais um para a carta que foi dstribuída 
    sw t1, 0(t6)
@@ -151,9 +151,9 @@ reiniciaLoop:
 
 fimReinicia:
    sw zero, 0(t0)
-   j dealerDistribution
+   j distribuiCartas
 
-# --- Função jogar_rodada ---
+# --- Função: jogar_rodada ---
 jogar_rodada:
    la t0, pontuacaoJ
    sw zero, 0(t0)
@@ -172,6 +172,7 @@ jogar_rodada:
    call mostra_cartas_recebidas
    call mostra_maoJ
 
+# --- Função: jogador_turno ---
 jogador_turno:
    la a0, msgHitStand
    li a7, 4
@@ -210,6 +211,7 @@ jogador_estourou:
    
    j main_loop
 
+# --- Função: dealer_turno ---
 dealer_turno:
 dealer_loop:
    la t1, pontuacaoD
@@ -312,7 +314,7 @@ mostra_cartas_recebidas:
    ecall
    ret
 
-# Função que mostra a última carta recebida      
+# Função que mostra a última carta recebida do jogador     
 mostra_carta_recebidaJ:
   la a0, msgJRecebe
   li a7, 4
@@ -334,6 +336,7 @@ mostra_carta_recebidaJ:
   ecall 
   ret
   
+# Função que mostra a última carta recebida do dealer   
 mostra_carta_recebidaD:
   la a0, msgDRecebe
   li a7, 4
@@ -399,6 +402,7 @@ fim_loop_mostraMaoJ:
 
   ret
   
+# Função que mostra a mão completa do dealer  
 mostra_maoD:
   la a0, msgDTem
   li a7, 4
@@ -442,6 +446,7 @@ fim_loop_mostraMaoD:
 
   ret  
 
+# Função que verifica quem ganhou a partida
 verifica_vencedor:
    la t0, pontuacaoJ
    lw t6, 0(t0)
@@ -482,6 +487,7 @@ empate:
    ecall
    j main_loop
    
+# Função que verifica se o jogador tirou o Ás   
 verifica_se_tirouAsJ:
    # t2 = carta sorteada
    li t0, 1
@@ -495,6 +501,7 @@ adiciona_asJ:
    sw t4, 0(t3)
    ret         
    
+# Função que verifica se o dealer tirou o Ás      
 verifica_se_tirouAsD:
    # t2 = carta sorteada
    li t0, 1
@@ -601,7 +608,7 @@ tira10D:
   
  jogador_jogada:
    mv s8, ra
-   call dealerDistribution # perdeu a referência do retorno da função
+   call distribuiCartas # perdeu a referência do retorno da função
    addi t2, a0, 0
    call verifica_se_tirouAsJ
    call soma_pontuacao_jogador
@@ -611,7 +618,7 @@ tira10D:
    
 dealer_jogada:
    mv s8, ra
-   call dealerDistribution
+   call distribuiCartas
    addi t2, a0, 0
    call verifica_se_tirouAsD
    call soma_pontuacao_dealer
