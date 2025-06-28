@@ -37,57 +37,57 @@
    msgEmpate: .string "\nEmpate!"
    
 .text
-   la a0, msgInicio
-   li a7, 4
-   ecall
+   la a0, msgInicio # salva a mensagem no a0
+   li a7, 4 # função ecall para imprimir
+   ecall #executa
 
 main_loop:
-   call mostraPontuacao
-   call verificaDesejo
-   call jogar_rodada
-   j main_loop
+   call mostraPontuacao # chama a pontuação
+   call verificaDesejo # verifica se deseja joga ou não
+   call jogar_rodada # chama jogo
+   j main_loop # retorna
 
 # --- Função: verificaDesejo ---
 verificaDesejo:
-   la a0, msgDesejaJogar
-   li a7, 4
-   ecall
-   li a7, 5
-   ecall
-   li t0, 2
-   beq a0, t0, encerrar_jogo
-   ret
+   la a0, msgDesejaJogar  #salva a mensagem no a0
+   li a7, 4 # função ecall para imprimir
+   ecall #executa
+   li a7, 5 # função que avisa o ecall salvar a escolha
+   ecall # executa
+   li t0, 2 # carrega no registrador t0 a opção 2
+   beq a0, t0, encerrar_jogo #verifica se a resposta do usuário é igual a 2, se sim, pula para encerrar o jogo
+   ret #retorna para a últa função, qe seria a main
 
 # --- Função: mostraPontuacao ---
 mostraPontuacao:
-   la a0, msgTotalCartas
-   li a7, 4
+   la a0, msgTotalCartas 
+   li a7, 4			#mostra a mensagem de total de cartas
    ecall
 
    la t0, totalCartas
-   lw a0, 0(t0)
+   lw a0, 0(t0)			#mostra o total de cartas
    li a7, 1
    ecall
 
-   la a0, msgPontuacao
+   la a0, msgPontuacao		#mostra a mensagem Pontuação
    li a7, 4
    ecall
 
    la a0, msgPontuacaoJ
-   li a7, 4
+   li a7, 4			
    ecall
 
    la t0, pontuacaoJRodada
-   lw a0, 0(t0)
+   lw a0, 0(t0)			#mostra a pontuação do jogador
    li a7, 1
    ecall
 
-   la a0, msgPontuacaoD
+   la a0, msgPontuacaoD		
    li a7, 4
    ecall
 
    la t0, pontuacaoDRodada
-   lw a0, 0(t0)
+   lw a0, 0(t0)			#mostra a a pontuação do dealer
    li a7, 1
    ecall
 
@@ -95,76 +95,76 @@ mostraPontuacao:
 
 # --- Função: distribuiCartas ---
 distribuiCartas:
-   la t0, totalDistribuidas
-   lw t1, 0(t0)
+   la t0, totalDistribuidas # salva o total em t0
+   lw t1, 0(t0) #carrega o valor do total
 
-   addi t2, zero, 40
-   bgt t1, t2, reiniciaDistribuicao
+   addi t2, zero, 40 #limita o t2 em 40, para reninciar a distribuição
+   bgt t1, t2, reiniciaDistribuicao # se t2 for igual a 40 pula para reninciar 
 
 continuaDistribuicao:
-   li a0, 0
-   li a1, 12
-   li a7, 42
-   ecall
+   li a0, 0  # gera um número de 0
+   li a1, 13 # até 13, ou seja [0,12]
+   li a7, 42 # faz um ramdom desses números
+   ecall # executa
 
-   addi a0, a0, 1
-   addi t3, a0, 0
+   addi a0, a0, 1 #transforma [0,12] em [1,13]
+   addi t3, a0, 0 # salva a carta sorteada e t3
 
-   la t4, cartasDistribuidas
-   slli t5, t3, 2
-   add t6, t4, t5
-   lw t1, 0(t6)
+   la t4, cartasDistribuidas # salva em t4 a quantidade de cartas distribuidas
+   slli t5, t3, 2 # multiplica o valor que saiu por 2, para adicionar no local da memória que ele vai
+   add t6, t4, t5 # soma o valor de t4 com o vaor de t5, resultando no endereço que a carta foi distribuida 
+   lw t1, 0(t6) # carrega em t1 o endereço que esta em t6
 
-   addi t2, zero, 4
+   addi t2, zero, 4 # adiciona o valor 4 no t2
    bge t1, t2, distribuiCartas  # se a carta já foi distribuída 4 vezes, ele sorteia outra
 
-   addi t1, t1, 1  # adiciona mais um para a carta que foi dstribuída 
-   sw t1, 0(t6)
+   addi t1, t1, 1 
+   sw t1, 0(t6)   # adiciona mais um para a carta que foi dstribuída 
 
-   lw t2, 0(t0)  # carrega totalDistribuidas
+   lw t2, 0(t0)  # lê o totalDistribuidas
    addi t2, t2, 1
-   sw t2, 0(t0)
+   sw t2, 0(t0) #atualiza a quantidade de cartas distribuidas
    
-   la t4, totalCartas  # diminui o total de cartas
+   la t4, totalCartas  
    lw t5, 0(t4)
    addi t5, t5, -1
-   sw t5, 0(t4) 
+   sw t5, 0(t4) 	# diminui o total de cartas
 
    addi a0, t3, 0
    ret
 
 reiniciaDistribuicao:
-   la t3, cartasDistribuidas
-   addi t4, zero, 0
+   la t3, cartasDistribuidas # adiciona em t3 a quantidade de cartas distribuidas
+   addi t4, zero, 0 # zera o t4, que guarda a quantidades tiradas
    
    la t5, totalCartas # Reinicia o valor do total de cartas
-   li t6, 52
-   sw t6, 0(t5)
+   li t6, 52 # carrega 52 cartas em t6
+   sw t6, 0(t5) # salva na memoria o total de cartas
    
 reiniciaLoop:
-   addi t5, zero, 13
-   beq t4, t5, fimReinicia
-   sw zero, 0(t3)
-   addi t3, t3, 4
-   addi t4, t4, 1
-   j reiniciaLoop
+   addi t5, zero, 13  
+   beq t4, t5, fimReinicia # se t4 = t5 ele zerou o toral de cartas e vai para o fim renincia
+   sw zero, 0(t3) # zera a posição atual de cartasDistribuidas
+   addi t3, t3, 4  #avança 4bytes 
+   addi t4, t4, 1 #incrementa 1 no contador
+   j reiniciaLoop #repete o looping
 
 fimReinicia:
-   sw zero, 0(t0)
-   j distribuiCartas
+   sw zero, 0(t0) #zera o total distribuidas
+   j distribuiCartas #volta para a distribuição
 
 # --- Função: jogar_rodada ---
 jogar_rodada:
-   la t0, pontuacaoJ
-   sw zero, 0(t0)
+   la t0, pontuacaoJ # salva no registrador t0 a pontuação do jogador
+   sw zero, 0(t0) 
    sw zero, 4(t0)
-   sw zero, 8(t0)
+   sw zero, 8(t0)    # zera as posições da memória que salvam as cartas que o uusuário pegou
    sw zero, 12(t0)
    sw zero, 16(t0)
    sw zero, 20(t0)
    
-   call jogador_jogada
-   call jogador_jogada
+   call jogador_jogada # pula para o jogador jogada
+   call jogador_jogada # pula para jogador jogada
    
    call dealer_jogada
    call dealer_jogada
@@ -175,18 +175,18 @@ jogar_rodada:
 # --- Função: jogador_turno ---
 jogador_turno:
    la a0, msgHitStand
-   li a7, 4
+   li a7, 4		#identifica se deseja jogar ou não
    ecall
 
    li a7, 5
-   ecall
+   ecall		#lê a escolha
    addi t3, a0, 0
 
    addi t4, zero, 1
-   beq t3, t4, jogador_hit
+   beq t3, t4, jogador_hit	#se escolheu 1 pula para jogador_hit
    addi t5, zero, 2
-   beq t3, t5, dealer_turno
-   j jogador_turno
+   beq t3, t5, dealer_turno	#se hogador escolheu 2 pula para dealer_turno
+   j jogador_turno		# repete a pergunta
 
 jogador_hit:
    call jogador_jogada
@@ -197,12 +197,12 @@ jogador_hit:
    la t0, pontuacaoJ
    lw t6, 0(t0)
    addi t4, zero, 21
-   bgt t6, t4, jogador_estourou
-   j jogador_turno
+   bgt t6, t4, jogador_estourou	# se o jogador passou de 21, pula para jogador_estorou
+   j jogador_turno	# retorna para o jogador_turno
 
 jogador_estourou:
    la a0, msgPerdeu
-   li a7, 4
+   li a7, 4		#imprime você perdeu
    ecall
    la t2, pontuacaoDRodada
    lw t3, 0(t2)
@@ -230,9 +230,9 @@ dealer_loop:
    la t1, pontuacaoD
    lw t5, 0(t1)
    li t6, 21
-   bgt t5, t6, dealer_estourou
+   bgt t5, t6, dealer_estourou # se o dealer passar de 21
 
-   j dealer_loop
+   j dealer_loop #continua pegando carta
 
 dealer_estourou:
    la a0, msgVenceu
@@ -607,14 +607,14 @@ tira10D:
   ret    
   
  jogador_jogada:
-   mv s8, ra
+   mv s8, ra # salva o endereço de ra em s8, para poder retornar para ese endereço depois
    call distribuiCartas # perdeu a referência do retorno da função
-   addi t2, a0, 0
-   call verifica_se_tirouAsJ
-   call soma_pontuacao_jogador
-   call adiciona_maoJ
-   mv ra, s8 # recupera para o outro ret da função que chama jogador_jogada
-   ret
+   addi t2, a0, 0 # copia o valor de a0 em t2
+   call verifica_se_tirouAsJ  #chama a função que identifica o as
+   call soma_pontuacao_jogador # chama a função que soma a pontuação
+   call adiciona_maoJ #  chama a função que adiciona o valor da mão do jogador
+   mv ra, s8 # resere o ra, para retornar corretamente
+   ret #volta para quem chamou o jogador jogada
    
 dealer_jogada:
    mv s8, ra
@@ -627,5 +627,5 @@ dealer_jogada:
    ret 
   
 encerrar_jogo:
-   li a7, 10
+   li a7, 10   #cahama o encerramento do programa
    ecall
